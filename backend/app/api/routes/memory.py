@@ -9,10 +9,6 @@ from app.core.safety import check_safety
 
 router = APIRouter()
 
-def container_tag_for_user(user_id: int) -> str:
-    # Keep consistent with router user id; using the same value ties the pools together. :contentReference[oaicite:7]{index=7}
-    return f"user:{user_id}"
-
 class AddMemoryRequest(BaseModel):
     content: str = Field(..., description="Text or URL")
     metadata: Optional[Dict[str, str]] = None
@@ -22,7 +18,8 @@ class AddMemoryRequest(BaseModel):
 @router.post("/memory/add")
 async def add_memory(payload: AddMemoryRequest, current=Depends(get_current_user)):
     client = MemoryAPIClient()
-    tag = container_tag_for_user(current["user_id"])
+    # Use the user's unique supermemory_user_id as the container tag
+    tag = current["supermemory_user_id"]
     try:
         result = await client.add_text_or_url(
             content=payload.content,
@@ -53,8 +50,8 @@ async def chat_complete(payload: ChatRequest, current=Depends(get_current_user))
         # Fail-closed: do NOT call the LLM
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
 
-    user_id_str = container_tag_for_user(current["user_id"])
-    router_client = MemoryRouterClient(user_id=user_id_str)
+    # Use the user's unique supermemory_user_id for memory isolation
+    router_client = MemoryRouterClient(user_id=current["supermemory_user_id"])
     try:
         result = router_client.chat(
             messages=[m.model_dump() for m in payload.messages],

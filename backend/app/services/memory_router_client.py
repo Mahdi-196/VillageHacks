@@ -7,8 +7,9 @@ from app.core.config import settings
 
 
 def _router_base_url() -> str:
-    # e.g. https://api.supermemory.ai/v3/ + https://api.openai.com/v1/
-    return f"{settings.SUPERMEMORY_ROUTER_BASE}{settings.PROVIDER_BASE_URL}"
+    # Supermemory router acts as OpenAI-compatible proxy
+    # Just return the router base URL (e.g. https://api.supermemory.ai/v3/)
+    return settings.SUPERMEMORY_ROUTER_BASE.rstrip('/')
 
 class MemoryRouterClient:
     def __init__(self, user_id: str):
@@ -35,9 +36,9 @@ class MemoryRouterClient:
         extra_headers = {}
         if conversation_id:
             # Persist conversation state via router header
-            extra_headers["x-sm-conversation-id"] = conversation_id  # :contentReference[oaicite:6]{index=6}
+            extra_headers["x-sm-conversation-id"] = conversation_id
 
-            resp = self.client.chat.completions.create(
+        resp = self.client.chat.completions.create(
             model=(model or settings.SM_DEFAULT_MODEL),
             messages=messages,
             extra_headers=extra_headers or None,

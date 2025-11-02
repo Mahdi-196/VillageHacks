@@ -13,7 +13,7 @@ class DocumentProcessorService:
     def __init__(self):
         self.lambda_api_url = settings.PHI_STRIPPER_LAMBDA_API_URL
 
-    async def process_document(self, raw_text: str = None, image_base64: str = None) -> Dict[str, Any]:
+    async def process_document(self, raw_text: str = None, image_base64: str = None, user_id: str = None) -> Dict[str, Any]:
         """Send document to Lambda for OCR, PHI removal, and Supermemory upload."""
         if not self.lambda_api_url:
             logger.error("PHI_STRIPPER_LAMBDA_API_URL not configured")
@@ -22,7 +22,7 @@ class DocumentProcessorService:
         if not raw_text and not image_base64:
             raise ValueError("Either raw_text or image_base64 must be provided")
 
-        logger.info(f"Sending document to Lambda for processing (type: {'text' if raw_text else 'image'})")
+        logger.info(f"Sending document to Lambda for processing (type: {'text' if raw_text else 'image'}, user_id: {user_id})")
 
         # Prepare payload for Lambda (via API Gateway)
         payload = {}
@@ -30,6 +30,8 @@ class DocumentProcessorService:
             payload["text_to_process"] = raw_text
         if image_base64:
             payload["image_base64"] = image_base64
+        if user_id:
+            payload["user_id"] = user_id  # Pass user ID to Lambda for tagging
 
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:

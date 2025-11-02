@@ -1,26 +1,32 @@
 # app/api/routes/documents.py
 import logging
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from app.schemas.document import DocumentUploadRequest, DocumentUploadResponse
 from app.services.document_processor import document_processor
+from app.api.deps import get_current_user
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 @router.post("/upload-document", response_model=DocumentUploadResponse, status_code=status.HTTP_200_OK)
-async def upload_document(payload: DocumentUploadRequest):
+async def upload_document(
+    payload: DocumentUploadRequest,
+    current=Depends(get_current_user)
+):
     """
-    Process medical documents and remove PHI before storage.
+    Process documents and store in user's personal memory space.
     Accepts text or base64-encoded images (JPEG, PNG, PDF, TIFF).
     """
     upload_type = "image" if payload.image_base64 else "text"
-    logger.info(f"Received {upload_type} document upload request")
+    logger.info(f"Received {upload_type} document upload request for user {current['user_id']}")
 
     try:
         # Call Lambda via the document processor service
+        # Pass user's supermemory_user_id so document gets tagged correctly
         lambda_response = await document_processor.process_document(
             raw_text=payload.text,
-            image_base64=payload.image_base64
+            image_base64=payload.image_base64,
+            user_id=current["supermemory_user_id"]
         )
 
         # Extract response fields from Lambda

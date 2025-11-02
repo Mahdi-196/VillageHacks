@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Background circle -->
+  <circle cx="16" cy="16" r="16" fill="#2563eb"/>
+
+  <!-- Medical cross/plus with rounded ends -->
+  <path d="M16 8C16 7.44772 15.5523 7 15 7H13C12.4477 7 12 7.44772 12 8V12H8C7.44772 12 7 12.4477 7 13V15C7 15.5523 7.44772 16 8 16H12V20C12 20.5523 12.4477 21 13 21H15C15.5523 21 16 20.5523 16 20V16H20C20.5523 16 21 15.5523 21 15V13C21 12.4477 20.5523 12 20 12H16V8Z" fill="white"/>
+
+  <!-- Heart accent -->
+  <path d="M23 9.5C23 8.67157 22.3284 8 21.5 8C20.6716 8 20 8.67157 20 9.5C20 10.3284 21.5 12 21.5 12C21.5 12 23 10.3284 23 9.5Z" fill="#fca5a5"/>
+
+  <circle cx="24" cy="24" r="2.5" fill="#93c5fd" opacity="0.8"/>
+</svg>

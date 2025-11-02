@@ -1,6 +1,6 @@
 // src/services/api.ts
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 export interface PublicUser {
   id: number;
@@ -14,12 +14,6 @@ export interface AuthResponse {
   access_token: string;
   token_type: string;
   expires_in_minutes: number;
-}
-
-interface ChatResponse {
-  id: string;
-  message: string;
-  timestamp: string;
 }
 
 export const authAPI = {
@@ -90,9 +84,29 @@ export const authAPI = {
   },
 };
 
+export interface ChatMessage {
+  role: string;
+  content: string;
+}
+
+export interface ChatResponse {
+  content: string;
+  model: string;
+  usage: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
+  memory_enabled: boolean;
+}
+
 export const chatAPI = {
-  async sendMessage(message: string): Promise<ChatResponse> {
+  async sendMessage(messages: ChatMessage[]): Promise<ChatResponse> {
     const token = localStorage.getItem('aura_token');
+
+    if (!token) {
+      throw new Error('Not authenticated');
+    }
 
     const response = await fetch(`${API_BASE_URL}/api/chat`, {
       method: 'POST',
@@ -100,13 +114,17 @@ export const chatAPI = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({
+        messages,
+        model: 'gpt-4o-mini',
+        max_tokens: 500
+      }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Failed to send message');
+      throw new Error(data.detail || 'Failed to send message');
     }
 
     return data;

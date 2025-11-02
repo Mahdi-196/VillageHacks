@@ -78,28 +78,29 @@ const AuthModal = ({ mode, onClose, onSwitchMode }: AuthModalProps) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 relative">
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative">
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-100 rounded-lg transition-colors"
         >
-          <FaTimes className="w-5 h-5" />
+          <FaTimes className="w-4 h-4" />
         </button>
 
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">
+        <h2 className="text-2xl font-semibold text-slate-900 mb-2">
           {mode === 'login' ? 'Welcome Back' : 'Join MedeSense'}
         </h2>
-        <p className="text-gray-600 mb-8">
+        <p className="text-slate-600 text-sm mb-6">
           {mode === 'login'
             ? 'Continue your wellness journey'
             : 'Start your personalized wellness journey'}
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3.5">
           {mode === 'signup' && (
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1">
                 Full Name
               </label>
               <input
@@ -107,7 +108,7 @@ const AuthModal = ({ mode, onClose, onSwitchMode }: AuthModalProps) => {
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
                 placeholder="Enter your name"
                 required
               />
@@ -115,7 +116,7 @@ const AuthModal = ({ mode, onClose, onSwitchMode }: AuthModalProps) => {
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
               Email
             </label>
             <input
@@ -123,14 +124,14 @@ const AuthModal = ({ mode, onClose, onSwitchMode }: AuthModalProps) => {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all"
+              className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
               placeholder="you@example.com"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
               Password
             </label>
             <input
@@ -138,14 +139,14 @@ const AuthModal = ({ mode, onClose, onSwitchMode }: AuthModalProps) => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all"
+              className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
               placeholder="••••••••"
               required
             />
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2.5 rounded-lg text-sm">
               {error}
             </div>
           )}
@@ -153,16 +154,17 @@ const AuthModal = ({ mode, onClose, onSwitchMode }: AuthModalProps) => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Please wait...' : mode === 'login' ? 'Login' : 'Sign Up'}
           </button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-5 text-center">
           <button
+            type="button"
             onClick={onSwitchMode}
-            className="text-indigo-600 hover:text-indigo-700 font-medium hover:underline"
+            className="text-blue-600 hover:text-blue-700 font-medium text-sm hover:underline"
           >
             {mode === 'login'
               ? "Don't have an account? Sign up"

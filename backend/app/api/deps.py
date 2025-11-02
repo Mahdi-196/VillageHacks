@@ -6,9 +6,12 @@ import logging
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import ExpiredSignatureError, InvalidTokenError
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import async_session
 from app.core.security import decode_access_token
+from app.models.user import User
 
 logger = logging.getLogger(__name__)
 bearer = HTTPBearer(auto_error=False)
@@ -18,7 +21,8 @@ async def get_session() -> AsyncGenerator:
         yield session
 
 async def get_current_user(
-    creds: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)]
+    creds: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)],
+    db: AsyncSession = Depends(get_session)
 ):
     if not creds:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing Authorization header")
@@ -42,4 +46,14 @@ async def get_current_user(
     except ValueError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload (sub not int)")
 
-    return {"user_id": user_id}
+    # Fetch user from database to get supermemory_user_id
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+
+    return {
+        "user_id": user.id,
+        "supermemory_user_id": user.supermemory_user_id
+    }

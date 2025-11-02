@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
+import uuid
 
 from app.api.deps import get_session
 from app.core.config import settings
@@ -33,11 +34,15 @@ async def register(payload: RegisterRequest, db: AsyncSession = Depends(get_sess
             logger.warning(f"Email already registered: {payload.email}")
             raise HTTPException(status_code=400, detail="Email already registered")
 
+        # Generate unique Supermemory user ID
+        supermemory_user_id = f"medesense_user_{uuid.uuid4().hex[:16]}"
+
         # Create user
         user = User(
             email=payload.email.lower(),
             hashed_password=get_password_hash(payload.password),
             display_name=payload.display_name,
+            supermemory_user_id=supermemory_user_id,
         )
         db.add(user)
         await db.commit()

@@ -93,6 +93,22 @@ Desktop.ini
 logs/
 *.log
 
-#tools
+# Deployment artifacts
+*.zip
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+token.txt
+*_deployment*.zip
+lambda_deployment*.zip
+backend_deployment*.zip
+
+# Deployment artifacts
+backend/lambda_extracted/
+backend/lambda_package/
+
+# Tools
 .cursor/*
 .claude/*

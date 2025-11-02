@@ -36,3 +36,22 @@ class MemoryAPIClient:
             r = await client.post(url, headers=self.headers, json=payload)
             r.raise_for_status()
             return r.json()
+
+    async def search_documents(
+        self,
+        query: str,
+        container_tag: str,
+        limit: int = 5
+    ) -> Dict[str, Any]:
+        """Search for relevant documents using Supermemory's v4 search API"""
+        url = f"{self.base}/v4/search"
+        payload = {
+            "q": query,  # v4 API uses 'q' not 'query'
+            "userId": container_tag,
+            "limit": limit
+        }
+
+        async with httpx.AsyncClient(timeout=30) as client:
+            r = await client.post(url, headers=self.headers, json=payload)
+            r.raise_for_status()
+            return r.json()

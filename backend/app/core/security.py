@@ -19,3 +19,10 @@ def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta]
     expire = datetime.now(tz=timezone.utc) + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire, "iat": datetime.now(tz=timezone.utc)})
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm="HS256")
+
+# app/core/security.py
+import jwt as _jwt
+
+def decode_access_token(token: str) -> dict:
+    return _jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+

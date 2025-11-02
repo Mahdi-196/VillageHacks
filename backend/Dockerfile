@@ -14,5 +14,5 @@ FROM base AS runtime
 COPY --from=deps /usr/local/lib/python3.11 /usr/local/lib/python3.11
 COPY --from=deps /usr/local/bin /usr/local/bin
 COPY app ./app
-EXPOSE 8000
+EXPOSE 8080
 CMD ["uvicorn", "app.main:app", "--host=0.0.0.0", "--port=8000"]

@@ -13,4 +13,10 @@ class _Settings(BaseModel):
     # Bcrypt work factor (keep modest for speed)
     BCRYPT_WORK_FACTOR: int = int(os.getenv("BCRYPT_WORK_FACTOR", "12"))
 
+    # app/core/config.py  (add at bottom of _Settings)
+    SUPERMEMORY_BASE_URL: str = os.getenv("SUPERMEMORY_BASE_URL", "https://api.supermemory.ai")
+    SUPERMEMORY_API_KEY: str = os.getenv("SUPERMEMORY_API_KEY", "")
+    SUPERMEMORY_REDIRECT_URL: str = os.getenv("SUPERMEMORY_REDIRECT_URL", "http://localhost:3000/supermemory/callback")
+
+
 settings = _Settings()

@@ -1,5 +1,6 @@
 // src/pages/ChatPage.tsx
-import { useState, useEffect, useRef, FormEvent, ChangeEvent } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import type { FormEvent, ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaUserMd, FaCog, FaPaperPlane, FaInfoCircle, FaPaperclip, FaTimes, FaFileAlt } from 'react-icons/fa';
 import SettingsModal from '../components/SettingsModal';
@@ -112,7 +113,6 @@ const ChatPage = () => {
     setMessages(prev => [...prev, userMessage]);
     const tempInput = inputValue.trim();
     setInputValue('');
-    const tempFiles = [...attachedFiles];
     setAttachedFiles([]);
     setLoading(true);
 

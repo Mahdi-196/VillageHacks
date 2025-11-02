@@ -67,27 +67,13 @@ const AuthModal = ({ mode, onClose, onSwitchMode }: AuthModalProps) => {
     setLoading(true);
 
     try {
-      const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/signup';
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          ...(mode === 'signup' && { name }),
-        }),
-      });
+      const { authAPI } = await import('../services/api');
 
-      const data = await response.json();
+      const data = mode === 'login'
+        ? await authAPI.login(email, password)
+        : await authAPI.register(email, password, name);
 
-      if (!response.ok) {
-        setError(data.error || 'Authentication failed');
-        return;
-      }
-
-      localStorage.setItem('aura_token', data.token);
+      localStorage.setItem('aura_token', data.access_token);
       localStorage.setItem('aura_user', JSON.stringify(data.user));
 
       if (mode === 'signup') {
@@ -101,7 +87,11 @@ const AuthModal = ({ mode, onClose, onSwitchMode }: AuthModalProps) => {
         }
       }
     } catch (err) {
-      setError('Unable to connect to server. Please try again.');
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Unable to connect to server. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

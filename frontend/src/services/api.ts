@@ -1,14 +1,19 @@
 // src/services/api.ts
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
-interface AuthResponse {
-  token: string;
-  user: {
-    id: string;
-    email: string;
-    name: string;
-  };
+export interface PublicUser {
+  id: number;
+  email: string;
+  display_name: string | null;
+  created_at: string;
+}
+
+export interface AuthResponse {
+  user: PublicUser;
+  access_token: string;
+  token_type: string;
+  expires_in_minutes: number;
 }
 
 interface ChatResponse {
@@ -18,40 +23,70 @@ interface ChatResponse {
 }
 
 export const authAPI = {
-  async signup(email: string, password: string, name: string): Promise<AuthResponse> {
-    const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password, name }),
-    });
+  async register(email: string, password: string, display_name: string): Promise<AuthResponse> {
+    try {
+      console.log('Registering user:', { email, display_name });
+      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, display_name }),
+      });
 
-    const data = await response.json();
+      console.log('Register response status:', response.status);
 
-    if (!response.ok) {
-      throw new Error(data.error || 'Signup failed');
+      if (!response.ok) {
+        let errorMessage = 'Registration failed';
+        try {
+          const data = await response.json();
+          errorMessage = data.detail || errorMessage;
+        } catch (e) {
+          console.error('Failed to parse error response:', e);
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      console.log('Registration successful:', data);
+      return data;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
     }
-
-    return data;
   },
 
   async login(email: string, password: string): Promise<AuthResponse> {
-    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      console.log('Logging in user:', { email });
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await response.json();
+      console.log('Login response status:', response.status);
 
-    if (!response.ok) {
-      throw new Error(data.error || 'Login failed');
+      if (!response.ok) {
+        let errorMessage = 'Login failed';
+        try {
+          const data = await response.json();
+          errorMessage = data.detail || errorMessage;
+        } catch (e) {
+          console.error('Failed to parse error response:', e);
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      console.log('Login successful:', data);
+      return data;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
     }
-
-    return data;
   },
 };
 

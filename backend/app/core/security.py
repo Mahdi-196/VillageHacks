@@ -9,8 +9,7 @@ from app.core.config import settings
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def get_password_hash(password: str) -> str:
-    # rounds taken from settings.BCRYPT_WORK_FACTOR for easy tuning
-    return pwd_context.hash(password, rounds=settings.BCRYPT_WORK_FACTOR)
+    return pwd_context.hash(password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)

@@ -40,17 +40,51 @@ const ChatPage = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
+  const convertFileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
+          const base64 = reader.result.split(',')[1];
+          resolve(base64);
+        } else {
+          reject(new Error('Failed to convert file to base64'));
+        }
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
 
-    const newFiles: AttachedFile[] = Array.from(files).map(file => ({
+  const handleFileSelect = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    // Only process the first file for medical document upload
+    const file = files[0];
+
+    // Validate file type (Textract supported formats)
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/tiff', 'application/pdf'];
+    if (!validTypes.includes(file.type)) {
+      alert('Please upload a valid medical document (JPEG, PNG, PDF, or TIFF format only)');
+      return;
+    }
+
+    // Validate file size (max 10MB for better performance)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      alert('File size must be less than 10MB');
+      return;
+    }
+
+    const newFile: AttachedFile = {
       name: file.name,
       size: file.size,
       type: file.type,
-    }));
+    };
 
-    setAttachedFiles(prev => [...prev, ...newFiles]);
+    setAttachedFiles([newFile]); // Only one file at a time for medical documents
   };
 
   const removeFile = (index: number) => {
@@ -70,56 +104,102 @@ const ChatPage = () => {
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: inputValue.trim() || 'Uploaded documents',
+      content: inputValue.trim() || 'Uploaded medical document for processing',
       timestamp: new Date(),
       attachments: attachedFiles.length > 0 ? [...attachedFiles] : undefined,
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const tempInput = inputValue.trim();
     setInputValue('');
+    const tempFiles = [...attachedFiles];
     setAttachedFiles([]);
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('aura_token');
+      // If there's a file attached, process it through the document upload endpoint
+      if (fileInputRef.current?.files && fileInputRef.current.files.length > 0) {
+        const file = fileInputRef.current.files[0];
 
-      const formData = new FormData();
-      formData.append('message', userMessage.content);
+        // Convert file to base64
+        const base64Content = await convertFileToBase64(file);
 
-      if (fileInputRef.current?.files) {
-        Array.from(fileInputRef.current.files).forEach(file => {
-          formData.append('files', file);
+        // Call the document upload endpoint
+        const response = await fetch('/api/documents/upload-document', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            image_base64: base64Content,
+          }),
         });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail || 'Failed to process document');
+        }
+
+        // Create assistant message with the processing results
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: `✅ **Document Processed Successfully**
+
+**${data.message}**
+
+📄 **File:** ${file.name}
+🔒 **PHI De-identified:** ${data.de_identified_text_uploaded ? 'Yes' : 'No'}
+📋 **Document ID:** ${data.supermemory_document_id || 'N/A'}
+
+Your medical document has been securely processed. All personally identifiable health information (PHI) has been removed, and the de-identified content has been uploaded to your secure medical knowledge base.
+
+You can now ask me questions about your medical records!`,
+          timestamp: new Date(),
+        };
+
+        setMessages(prev => [...prev, assistantMessage]);
+      } else if (tempInput) {
+        // Regular text message to chat endpoint
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: tempInput,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to get response');
+        }
+
+        const assistantMessage: Message = {
+          id: data.id || (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: data.message,
+          timestamp: new Date(data.timestamp || Date.now()),
+        };
+
+        setMessages(prev => [...prev, assistantMessage]);
       }
-
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to get response');
-      }
-
-      const assistantMessage: Message = {
-        id: data.id || (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: data.message,
-        timestamp: new Date(data.timestamp || Date.now()),
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
     } catch (err) {
-      console.error('Error sending message:', err);
+      console.error('Error processing request:', err);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Unable to connect to server. Please try again.',
+        content: `❌ **Error Processing Request**
+
+${err instanceof Error ? err.message : 'Unable to process your request. Please try again.'}
+
+If the problem persists, please check that:
+- Your file is in JPEG, PNG, PDF, or TIFF format
+- The file size is under 10MB
+- You have a stable internet connection`,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -253,8 +333,7 @@ const ChatPage = () => {
               type="file"
               ref={fileInputRef}
               onChange={handleFileSelect}
-              multiple
-              accept=".pdf,.doc,.docx,.txt,.csv,.json"
+              accept=".jpg,.jpeg,.png,.pdf,.tiff,.tif,image/jpeg,image/png,image/tiff,application/pdf"
               className="hidden"
             />
             <button

@@ -1,16 +1,16 @@
 # app/core/config.py
 from pydantic import BaseModel
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 class _Settings(BaseModel):
-    # Database URL (SQLite by default for hackathon speed)
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./medesense.db")
-
-    # JWT
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "CHANGE_ME_IN_PROD")
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
-
-    # Bcrypt work factor (keep modest for speed)
     BCRYPT_WORK_FACTOR: int = int(os.getenv("BCRYPT_WORK_FACTOR", "12"))
+    PHI_STRIPPER_LAMBDA_API_URL: str = os.getenv("PHI_STRIPPER_LAMBDA_API_URL", "")
 
 settings = _Settings()

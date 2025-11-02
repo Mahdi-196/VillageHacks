@@ -1,8 +1,7 @@
-// src/components/AuthModal.tsx
-import { useState, FormEvent } from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaTimes } from 'react-icons/fa';
-import GoogleDrivePrompt from './GoogleDrivePrompt';
 import TOSModal from './TOSModal';
 
 interface AuthModalProps {
@@ -18,40 +17,12 @@ const AuthModal = ({ mode, onClose, onSwitchMode }: AuthModalProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showTOS, setShowTOS] = useState(false);
-  const [showGoogleDrivePrompt, setShowGoogleDrivePrompt] = useState(false);
   const navigate = useNavigate();
-
-  const handleConnectGoogleDrive = async () => {
-    try {
-      const token = localStorage.getItem('aura_token');
-      const response = await fetch('/api/integrations/google-drive/connect', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (data.authUrl) {
-        window.open(data.authUrl, '_blank', 'width=600,height=700');
-      }
-    } catch (err) {
-      console.error('Failed to connect Google Drive:', err);
-    }
-    setShowGoogleDrivePrompt(false);
-    navigate('/chat');
-  };
-
-  const handleSkipGoogleDrive = () => {
-    setShowGoogleDrivePrompt(false);
-    navigate('/chat');
-  };
 
   const handleAcceptTOS = () => {
     setShowTOS(false);
     localStorage.setItem('aura_tos_accepted', 'true');
-    setShowGoogleDrivePrompt(true);
+    navigate('/chat');
   };
 
   const handleDeclineTOS = () => {
@@ -106,15 +77,6 @@ const AuthModal = ({ mode, onClose, onSwitchMode }: AuthModalProps) => {
     );
   }
 
-  if (showGoogleDrivePrompt) {
-    return (
-      <GoogleDrivePrompt
-        onConnect={handleConnectGoogleDrive}
-        onSkip={handleSkipGoogleDrive}
-      />
-    );
-  }
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 relative">
@@ -145,7 +107,7 @@ const AuthModal = ({ mode, onClose, onSwitchMode }: AuthModalProps) => {
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all"
                 placeholder="Enter your name"
                 required
               />

@@ -82,7 +82,7 @@ An intelligent health assistant that:
 
 ### Architecture
 
-![MedeSense AWS Architecture](https://mahdi-readme-images.s3.us-east-1.amazonaws.com/MedeSense_AWS++)
+![MedeSense AWS Architecture](https://mahdi-readme-images.s3.us-east-1.amazonaws.com/MedeSense_AWS)
 
 
 ## Getting Started

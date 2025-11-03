@@ -80,6 +80,8 @@ An intelligent health assistant that:
 
 **Production URL:** [https://medesense.site](https://medesense.site)
 
+**PitchDeck Demo:** [Watch Here](https://www.youtube.com/watch?v=zq_gsbvXTlI)
+
 ### Architecture
 
 ![MedeSense AWS Architecture](https://mahdi-readme-images.s3.us-east-1.amazonaws.com/MedeSense_AWS)
